@@ -13,12 +13,15 @@ linux/c++/epoll/lua/mongo
 
 	d.导入lunar的源码, 调用lunar封装过的luaapi来获取脚本数据更方便
 
-2.守护进程模式:
+2.守护进程模式: over
     
-    a.信号处理接口：关服信号要具体化
-    
+    a.信号处理接口：关服信号要具体化 SIGINI-reload SIGUSR1-stop SIGUSR2-breakwhile
+
+	b.一个控制静态变量构造和析构的类
+
 3.日志系统:
     
-    a.定时定帧
+    a.定时定帧: 每秒更新一次日志时间串
     
-    b.分文件写入
+    b.分文件写入: 一小时一个文件
+

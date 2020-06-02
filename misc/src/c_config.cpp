@@ -16,7 +16,7 @@ int CConfig::LoadConfig(const char* _path)
 		return -3;
 	}
 
-	Lua::GetTableNumber(L, LUA_GLOBALSINDEX, "daemon", m_daemon);
+	Lua::GetTableNumber(L, -1, "daemon", m_daemon);
 	lua_close(L);
 	return 0;
 }

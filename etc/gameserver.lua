@@ -1,3 +1,3 @@
 Config = {
-	daemon = 1, --后台模式
+	daemon = 0, --后台模式
 }
