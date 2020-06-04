@@ -17,6 +17,7 @@ int CConfig::LoadConfig(const char* _path)
 	}
 
 	Lua::GetTableNumber(L, -1, "daemon", m_daemon);
+	Lua::GetTableString(L, -1, "logpath", m_logPrefix, 29);
 	lua_close(L);
 	return 0;
 }

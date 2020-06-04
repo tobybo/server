@@ -4,6 +4,9 @@
 #include <unistd.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <pthread.h>
+#include <time.h>
+#include<sys/time.h>
 
 extern "C"
 {
@@ -13,7 +16,17 @@ extern "C"
 }
 
 #include "c_config.h"
+#include "c_log.h"
 #include "gameserver.h"
+#include "macro.h"
+
+CConfig* g_config;
+CLog* g_log;
+
+int gTime = 0;
+int gFrame;
+unsigned long gMsec;
+char gTimeFormat[50]; //"[2020-06-06 23:59:59][1234567890]"
 
 void usage();
 int set_daemon(int _daemon);
@@ -22,6 +35,8 @@ void set_signal_action();
 void break_dead_while();
 void main_loop();
 void write_pid();
+void* specify_time(void* _threaData);
+int start_time_thread();
 
 int main(int argc, const char** argv)
 {
@@ -43,7 +58,7 @@ int main(int argc, const char** argv)
 		strcpy(configPath,"../etc/gameserver.lua");
 	}
 	//printf("configpath: %s\n",configPath);
-	CConfig* g_config = new CConfig();
+	g_instance = new GlobalInstance; //初始化静态变量
 	if( g_config == nullptr || g_config->LoadConfig(configPath) != 0 )
 		usage();
 	//设置信号处理
@@ -55,10 +70,17 @@ int main(int argc, const char** argv)
 	{
 		goto lblexit;
 	}
+	if(g_instance->Init() != 0)
+		goto lblexit;
 	write_pid();
-	g_instance = new GlobalInstance; //初始化静态变量
+	if(0 != start_time_thread())
+	{
+		//创建失败
+		goto lblexit;
+	}
 	main_loop();
 lblexit:
+	delete g_instance;
 	return exitNum;
 }
 
@@ -189,16 +211,65 @@ void main_loop()
 	}
 }
 
+int start_time_thread()
+{
+	pthread_t thread_handler;
+	return pthread_create(&thread_handler,NULL,specify_time,NULL);
+}
+
+void* specify_time(void* _threaData)
+{
+	while(g_instance->m_active)
+	{
+		static struct timeval tv_now;
+		struct timeval tv_out;
+		gettimeofday(&tv_now, nullptr);
+		tv_out.tv_sec = 0;
+		tv_out.tv_usec = 1000 - tv_now.tv_usec % 1000;
+		select(0, nullptr, nullptr, nullptr, &tv_out);
+		gettimeofday(&tv_now, nullptr);
+		static time_t old_gTime = gTime;
+		gTime = tv_now.tv_sec;
+		if(old_gTime != gTime)
+		{
+			old_gTime = gTime;
+			struct tm tmDate;
+			localtime_r((time_t*)&old_gTime,&tmDate);
+			snprintf(gTimeFormat,21,"[%04d-%02d-%02d %02d:%02d:%02d]",tmDate.tm_year,tmDate.tm_mon,tmDate.tm_mday,tmDate.tm_hour,tmDate.tm_min,tmDate.tm_sec);
+		}
+		gMsec = gTime * 1000 + tv_now.tv_usec * 0.001;
+		int frame_len = sprintf(gTimeFormat + 21,"[%d] ",gFrame);
+		gTimeFormat[frame_len + 21] = '\0';
+		if(old_gTime == 0)
+			g_log->InitLog();
+	}
+	return (void*)0;
+}
+
 GlobalInstance::GlobalInstance()
 {
-	m_active = true;  //服务器是否开启中
-	m_reload = false; //是否需要reload
-	m_stop   = false; //是否需要停止服务器
+	g_config = new CConfig();
+	g_log    = new CLog();
 }
 
 GlobalInstance::~GlobalInstance()
 {
+	if(g_config)
+	{
+		delete g_config;
+	}
+	if(g_log)
+	{
+		delete g_log;
+	}
+}
 
+int GlobalInstance::Init()
+{
+	m_active = true;  //服务器是否开启中
+	m_reload = false; //是否需要reload
+	m_stop   = false; //是否需要停止服务器
+	return 0;
 }
 
 GlobalInstance* g_instance = nullptr;

@@ -7,11 +7,12 @@ class GlobalInstance
 		GlobalInstance();
 		~GlobalInstance();
 	public:
+		int Init();
+	public:
 		bool m_reload;
 		bool m_stop;
 		bool m_active;
 };
 
-extern GlobalInstance* g_instance;
 
 #endif
