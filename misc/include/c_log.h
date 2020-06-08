@@ -3,6 +3,7 @@
 
 #include <list>
 #include <cstring>
+#include <sys/time.h>
 #include "c_thread.h"
 #include "c_mylist.h"
 
@@ -11,7 +12,7 @@ const int MAX_LOG_LEVEL   = 3;
 const int MAX_LOG_REAMIN  = 10;
 
 const char LEVEL_NAME[][10] = {
-	"error","info","log"
+	"error_","info_","log_"
 };
 
 typedef struct
@@ -25,6 +26,7 @@ class CLog:public CThread
 {
 	public:
 		CLog();
+		~CLog();
 	public:
 		void run();
 	public:
@@ -36,6 +38,7 @@ class CLog:public CThread
 		int m_remainCount; //保留buff数量
 		int m_nowRemainCount; //当前保留buff数量
 		int m_fd[MAX_LOG_LEVEL]; //日志文件fd
+		struct tm *m_fileDate; //当前文件描述符对应的日期
 		CMylist<lplog_buff> m_freeList;  //空闲buff队列 回收和使用的时候需要加锁
 		CMylist<lplog_buff> m_writeList; //待写队列 需要加锁操作
 		char m_content[MAX_LOG_CONTENT];

@@ -24,11 +24,11 @@ CConfig* g_config;
 CLog* g_log;
 
 int gTime = 0;
-int gFrame;
+int gFrame = 0;
 unsigned long gMsec;
 char gTimeFormat[50]; //"[2020-06-06 23:59:59][1234567890]"
 
-void usage();
+void usage(const char* _file, int _line);
 int set_daemon(int _daemon);
 void signal_action(int _sig);
 void set_signal_action();
@@ -49,7 +49,7 @@ int main(int argc, const char** argv)
 			/*printf("arg%d: %s, size: %d\n",i,argv[i],strlen(argv[i]));*/
 		if(sizeof(argv[1]) > 100)
 		{
-			usage();
+			usage(__FILE__,__LINE__);
 		}
 		memcpy(configPath,argv[1],strlen(argv[1]));
 	}
@@ -57,10 +57,10 @@ int main(int argc, const char** argv)
 	{
 		strcpy(configPath,"../etc/gameserver.lua");
 	}
-	//printf("configpath: %s\n",configPath);
+	printf("configpath: %s\n",configPath);
 	g_instance = new GlobalInstance; //初始化静态变量
 	if( g_config == nullptr || g_config->LoadConfig(configPath) != 0 )
-		usage();
+		usage(__FILE__,__LINE__);
 	//设置信号处理
 	set_signal_action();
 	//设置守护模式
@@ -78,15 +78,16 @@ int main(int argc, const char** argv)
 		//创建失败
 		goto lblexit;
 	}
+	sleep(3);
 	main_loop();
 lblexit:
 	delete g_instance;
 	return exitNum;
 }
 
-void usage()
+void usage(const char* _file, int _line)
 {
-	printf("exit   : file %s, line %d\n",__FILE__,__LINE__);
+	printf("exit   : file %s, line %d\n",_file,_line);
 	printf("usage  : ./gameserver path_to_config; sizeof path_to_config must less than 100 bytes\n");
 	printf("example: ./gameserver ../etc/gameserver.lua\n");
 	printf("usage  : default config_path is etc/gameserver.lua, use ./gameserver to start the server\n");
@@ -148,7 +149,7 @@ void set_signal_action()
 		||0 != sigaction(SIGUSR1,&act,&old_act)
 		  ||0 != sigaction(SIGUSR2,&act,&old_act))
 	{
-		usage();
+		usage(__FILE__,__LINE__);
 		return;
 	}
 	printf("[SIGNAL] set_signal_action succ\n");
@@ -232,16 +233,22 @@ void* specify_time(void* _threaData)
 		gTime = tv_now.tv_sec;
 		if(old_gTime != gTime)
 		{
-			old_gTime = gTime;
 			struct tm tmDate;
-			localtime_r((time_t*)&old_gTime,&tmDate);
-			snprintf(gTimeFormat,21,"[%04d-%02d-%02d %02d:%02d:%02d]",tmDate.tm_year,tmDate.tm_mon,tmDate.tm_mday,tmDate.tm_hour,tmDate.tm_min,tmDate.tm_sec);
+			localtime_r((time_t*)&gTime,&tmDate);
+			snprintf(gTimeFormat,22,"[%04d-%02d-%02d %02d:%02d:%02d]",tmDate.tm_year + 1900,tmDate.tm_mon,tmDate.tm_mday,tmDate.tm_hour,tmDate.tm_min,tmDate.tm_sec);
 		}
 		gMsec = gTime * 1000 + tv_now.tv_usec * 0.001;
-		int frame_len = sprintf(gTimeFormat + 21,"[%d] ",gFrame);
-		gTimeFormat[frame_len + 21] = '\0';
+		sprintf(gTimeFormat + 21,"[%08d] ",gFrame);
 		if(old_gTime == 0)
+		{
 			g_log->InitLog();
+			g_log->start();
+		}
+		else
+		{
+			g_log->BuildFd();
+		}
+		old_gTime = gTime;
 	}
 	return (void*)0;
 }

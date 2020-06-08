@@ -7,14 +7,14 @@ class CConfig
 {
 	public:
 		CConfig(){
-			memset(m_logPrefix,0,30);
+			memset(m_logPrefix,0,100);
 		};
 		~CConfig(){};
 	public:
 		int LoadConfig(const char* _path);
 	public:
 		int m_daemon;
-		char m_logPrefix[30];
+		char m_logPrefix[100];
 
 };
 

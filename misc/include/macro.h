@@ -5,6 +5,8 @@
 #include "c_config.h"
 #include "gameserver.h"
 
+#define log(_level,form,arg...) g_log->Log(_level,form,##arg)
+
 extern int gTime;
 extern int gFrame;
 extern unsigned long gMsec;
