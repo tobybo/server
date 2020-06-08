@@ -29,6 +29,12 @@ linux/c++/epoll/lua/mongo
     
     c.维护一个日志buff空闲list 和 一个日志buff待写入文件list
     
+		1.定义 CMlist<T> 类，封装 std::list 的几个主要方法;
+		
+		2.自动加锁解锁，自动检查条件变量，自动唤醒线程
+		
+		3.定义 CLock，构造函数加锁，析构函数解锁
+    
     d.定义一个线程抽象基类：子类实现run方法，调用父类的start(用友元函数void* thread_start(void*)作为线程执行函数的入口,将子类对象转化成void*作为参数)，友元函数内部再调用run方法来执行实际逻辑。
     
 
