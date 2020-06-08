@@ -111,7 +111,7 @@ void CLog::BuildFd()
 	for(int i = 0;i < MAX_LOG_LEVEL; i++)
 	{
 		int len = sprintf(path,"%s%s%04d%02d%02d%02d.log",g_config->m_logPrefix,
-			LEVEL_NAME[i],tmDate.tm_year+1900,tmDate.tm_mon,tmDate.tm_mday,tmDate.tm_hour);
+			LEVEL_NAME[i],tmDate.tm_year+1900,tmDate.tm_mon+1,tmDate.tm_mday,tmDate.tm_hour);
 		path[len] = '\0';
 		if(m_fd[i] != 0)
 		{

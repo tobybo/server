@@ -235,7 +235,7 @@ void* specify_time(void* _threaData)
 		{
 			struct tm tmDate;
 			localtime_r((time_t*)&gTime,&tmDate);
-			snprintf(gTimeFormat,22,"[%04d-%02d-%02d %02d:%02d:%02d]",tmDate.tm_year + 1900,tmDate.tm_mon,tmDate.tm_mday,tmDate.tm_hour,tmDate.tm_min,tmDate.tm_sec);
+			snprintf(gTimeFormat,22,"[%04d-%02d-%02d %02d:%02d:%02d]",tmDate.tm_year + 1900,tmDate.tm_mon+1,tmDate.tm_mday,tmDate.tm_hour,tmDate.tm_min,tmDate.tm_sec);
 		}
 		gMsec = gTime * 1000 + tv_now.tv_usec * 0.001;
 		sprintf(gTimeFormat + 21,"[%08d] ",gFrame);
