@@ -7,7 +7,7 @@
 #include <cstring>
 #include <sys/time.h>
 
-CLog::CLog()
+CLog::CLog():m_fileDate(nullptr)
 {
 	m_remainCount    = MAX_LOG_REAMIN;
 	lplog_buff temp;
@@ -44,7 +44,7 @@ void CLog::run()
 	{
 		sleep(1);
 	}
-	while(g_instance->m_active)
+	while(m_active)
 	{
 		lplog_buff log_str = m_writeList.pop_front();
 		if(log_str)
@@ -128,3 +128,11 @@ void CLog::InitLog()
 	m_active = 1;
 }
 
+int CLog::stop()
+{
+	m_active = 0;
+	m_freeList.just_signal();
+	m_writeList.just_signal();
+	CThread::stop();
+	return 0;
+}

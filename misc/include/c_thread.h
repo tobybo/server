@@ -11,7 +11,7 @@ class CThread
 		virtual ~CThread();
 		void join();
 		int start();
-		int stop();
+		virtual int stop();
 
 	protected:
 		pthread_t m_threadId;

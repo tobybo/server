@@ -1,6 +1,7 @@
 #ifndef _C_MYLIST_H_
 #define _C_MYLIST_H_
 
+#include <iostream>
 #include <list>
 #include <pthread.h>
 
@@ -19,6 +20,7 @@ class CMylist
 		T pop_front_no_wait();
 		void push_back(T);
 		void push_back_no_signal(T);
+		void just_signal();
 	private:
 		pthread_mutex_t m_mutex;
 		pthread_cond_t m_cond;
@@ -39,7 +41,8 @@ CMylist<T>::~CMylist()
 {
 	pthread_mutex_lock(&m_mutex);
 	T temp;
-	for(int i = 0; i < size(); i++)
+	int len = size();
+	for(int i = 0; i < len; i++)
 	{
 		temp = m_list.front();
 		m_list.pop_front();
@@ -67,11 +70,15 @@ template<class T>
 T CMylist<T>::pop_front()
 {
 	CLock lock(&m_mutex);
-	if(m_list.size() == 0)
+	if(m_list.empty())
 	{
 		m_wait = 1;
 		pthread_cond_wait(&m_cond,&m_mutex);
 		m_wait = 0;
+		if(m_list.empty())
+		{
+			return NULL;
+		}
 	}
 	T temp = m_list.front();
 	m_list.pop_front();
@@ -105,6 +112,12 @@ void CMylist<T>::push_back_no_signal(T _val)
 {
 	CLock lock(&m_mutex);
 	m_list.push_back(_val);
+}
+
+template<class T>
+void CMylist<T>::just_signal()
+{
+	pthread_cond_signal(&m_cond);
 }
 
 #endif

@@ -28,7 +28,8 @@ class CLog:public CThread
 		CLog();
 		~CLog();
 	public:
-		void run();
+		virtual void run();
+		virtual int stop();
 	public:
 		int Log(int _level, const char* form, ...);
 		void BuildFd();

@@ -27,6 +27,7 @@ int gTime = 0;
 int gFrame = 0;
 unsigned long gMsec;
 char gTimeFormat[50]; //"[2020-06-06 23:59:59][1234567890]"
+pthread_t g_timeThread;
 
 void usage(const char* _file, int _line);
 int set_daemon(int _daemon);
@@ -79,6 +80,12 @@ int main(int argc, const char** argv)
 		goto lblexit;
 	}
 	sleep(3);
+	/*for(int i = 0; i<100000; i++)*/
+	//{
+		//log(0,"[TEST] test log: %d",i);
+		//log(1,"[TEST] test log: %d",i);
+		//log(2,"[TEST] test log: %d",i);
+	/*}*/
 	main_loop();
 lblexit:
 	delete g_instance;
@@ -214,8 +221,7 @@ void main_loop()
 
 int start_time_thread()
 {
-	pthread_t thread_handler;
-	return pthread_create(&thread_handler,NULL,specify_time,NULL);
+	return pthread_create(&g_timeThread,NULL,specify_time,NULL);
 }
 
 void* specify_time(void* _threaData)
@@ -238,7 +244,7 @@ void* specify_time(void* _threaData)
 			snprintf(gTimeFormat,22,"[%04d-%02d-%02d %02d:%02d:%02d]",tmDate.tm_year + 1900,tmDate.tm_mon+1,tmDate.tm_mday,tmDate.tm_hour,tmDate.tm_min,tmDate.tm_sec);
 		}
 		gMsec = gTime * 1000 + tv_now.tv_usec * 0.001;
-		sprintf(gTimeFormat + 21,"[%08d] ",gFrame);
+		sprintf(gTimeFormat + 21,"[%08d]",gFrame);
 		if(old_gTime == 0)
 		{
 			g_log->InitLog();
@@ -261,12 +267,14 @@ GlobalInstance::GlobalInstance()
 
 GlobalInstance::~GlobalInstance()
 {
+	pthread_join(g_timeThread,nullptr);
 	if(g_config)
 	{
 		delete g_config;
 	}
 	if(g_log)
 	{
+		g_log->stop();
 		delete g_log;
 	}
 }

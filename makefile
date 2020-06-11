@@ -10,5 +10,5 @@ all:
 	#rm -rf app/link_obj app/dep
 	@echo "end remove ----------------------"
 clean:
-	rm -rf bin/link_obj bin/dep bin/gameserver
+	rm -rf bin/link_obj bin/dep bin/gameserver gmpid.log
 
