@@ -19,6 +19,8 @@ extern "C"
 #include "c_log.h"
 #include "gameserver.h"
 #include "macro.h"
+#include "c_mempooler.h"
+#include "c_buffer.h"
 
 CConfig* g_config;
 CLog* g_log;
@@ -44,6 +46,9 @@ int main(int argc, const char** argv)
 	int exitNum = 0;
 	char configPath[100];
 	memset(configPath,0,sizeof(configPath));
+
+	CBuffer* arr[20];
+
 	if(argc > 1)
 	{
 		/*for(int i = 0; i<argc; i++)*/
@@ -80,12 +85,27 @@ int main(int argc, const char** argv)
 		goto lblexit;
 	}
 	sleep(3);
+
+	//test log
 	/*for(int i = 0; i<100000; i++)*/
 	//{
 		//log(0,"[TEST] test log: %d",i);
 		//log(1,"[TEST] test log: %d",i);
 		//log(2,"[TEST] test log: %d",i);
 	/*}*/
+
+	//test mempooler
+	CBuffer::m_memPooler = new CMemPooler<CBuffer>(10);
+	for(int i = 0; i < 20; i++)
+	{
+		arr[i] = new CBuffer();
+	}
+	for(int i = 0; i < 20; i++)
+	{
+		delete arr[i];
+	}
+	delete CBuffer::m_memPooler;
+
 	main_loop();
 lblexit:
 	delete g_instance;

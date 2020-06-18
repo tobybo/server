@@ -37,4 +37,13 @@ linux/c++/epoll/lua/mongo
     
     d.定义一个线程抽象基类：子类实现run方法，调用父类的start(用友元函数void* thread_start(void*)作为线程执行函数的入口,将子类对象转化成void*作为参数)，友元函数内部再调用run方法来执行实际逻辑。
     
+4.内存池: over
+
+	a.模板类，内存单元为单个对象
+
+	b.由于分配大小固定，所以采用freelist算法即可
+
+	c.超出预分配大小自由分配，记录分配情况
+
+	d.定义重载new，delete的宏，方便使用内存池的类重载new，delete运算符
 

@@ -42,6 +42,7 @@ CMylist<T>::~CMylist()
 	pthread_mutex_lock(&m_mutex);
 	T temp;
 	int len = size();
+	printf("list len: %d\n",len);
 	for(int i = 0; i < len; i++)
 	{
 		temp = m_list.front();

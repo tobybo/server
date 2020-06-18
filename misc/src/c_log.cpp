@@ -64,6 +64,10 @@ void CLog::run()
 				log_str->level = 0; //not necessary
 				m_freeList.push_back_no_signal(log_str);
 			}
+			else
+			{
+				delete log_str; //不放回空闲队列就需要立即释放
+			}
 		}
 	}
 }
